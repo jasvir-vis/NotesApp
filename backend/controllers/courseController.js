@@ -4,6 +4,8 @@ const Course = require("../models/Course");
 // ✅ CREATE COURSE (with facultyId)
 exports.createCourse = async (req, res) => {
   try {
+    console.log("BODY:", req.body);
+    console.log("FACULTY ID:", req.facultyId);
     const course = await Course.create({
       ...req.body,
       facultyId: req.facultyId   // 🔥 attach logged-in faculty
