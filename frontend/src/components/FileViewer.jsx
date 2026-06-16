@@ -15,7 +15,7 @@ const FileViewer = ({ file }) => {
     );
   }
 
-  const fileUrl = `http://localhost:5000${file.fileUrl}`;
+  const fileUrl = `https://notesapp-3nkf.onrender.com${file.fileUrl}`;
   const fileExtension = file.fileUrl.split('.').pop().toLowerCase();
   
   const getFileTypeIcon = () => {
