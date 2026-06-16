@@ -1,12 +1,9 @@
 import axios from "axios";
 
-// const API = axios.create({
-//   baseURL: "https://notesapp-3nkf.onrender.com/api",
-// });
-
 const API = axios.create({
-  baseURL: `import.meta.env.VITE_API_URL/api`,
+  baseURL: "https://notesapp-3nkf.onrender.com/api",
 });
+
 
 API.interceptors.request.use((req) => {
   // Check current URL to determine which token to use
