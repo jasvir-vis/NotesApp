@@ -7,6 +7,7 @@ const topicMasterRoutes = require("./routes/topicMasterRoutes");
 
 const app = express();
 
+PORT = process.env.PORT || 5000;
 connectDB();
 
 app.use(cors({
@@ -35,6 +36,10 @@ app.use("/api/faculty",require("./routes/facultyRoutes"));
 // Error handling middleware should be last
 app.use(errorHandler);
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+app.get("/", (req, res) => {
+  res.send("Backend is running");
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
