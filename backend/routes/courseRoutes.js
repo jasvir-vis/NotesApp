@@ -9,7 +9,7 @@ const facultyAuth = require("../middleware/facultyAuth");
 
 
 
-router.post("/", auth, createCourse);
+router.post("/", facultyAuth, createCourse);
 
 router.get("/", getCourses);
 
