@@ -121,7 +121,7 @@ exports.uploadTopic = async (req, res) => {
     const topic = new Topic({
       courseId: req.body.courseId,
       topicName: req.body.topicName,
-      fileUrl: req.file.path,,
+      fileUrl: req.file.path,
       fileType: req.file.mimetype,
       facultyId: req.facultyId 
     });
