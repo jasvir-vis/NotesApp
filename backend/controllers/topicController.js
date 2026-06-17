@@ -3,68 +3,81 @@ const fs = require("fs");
 const path = require("path");
 const archiver = require("archiver");
 const PDFMerger = require("pdf-merger-js").default;
+const axios = require("axios");
 
 
 exports.mergeAndDownload = async (req, res) => {
   try {
     const { topicIds } = req.body;
 
-    const topics = await Topic.find({ _id: { $in: topicIds } });
+    const topics = await Topic.find({
+      _id: { $in: topicIds }
+    });
 
     const merger = new PDFMerger();
 
-    let added = 0;
+    for (const topic of topics) {
 
-    for (let topic of topics) {
-      // 🔥 FIX PATH
-      const filePath = path.join(
-        __dirname,
-        "..",
-        topic.fileUrl.replace("/", "")
-      );
-
-      console.log("Checking:", filePath);
-
-      // ❌ Skip non-pdf
       if (!topic.fileType?.includes("pdf")) {
-        console.log("Skipped non-PDF:", topic.fileUrl);
         continue;
       }
 
-      if (fs.existsSync(filePath)) {
-        await merger.add(filePath);
-        added++;
-      } else {
-        console.log("File not found:", filePath);
-      }
+      const response = await axios.get(
+        topic.fileUrl,
+        {
+          responseType: "arraybuffer"
+        }
+      );
+
+      const tempPath =
+        path.join(
+          os.tmpdir(),
+          `${topic._id}.pdf`
+        );
+
+      fs.writeFileSync(
+        tempPath,
+        response.data
+      );
+
+      await merger.add(tempPath);
     }
 
-    if (added === 0) {
-      return res.status(400).json({ message: "No valid PDF files" });
-    }
-
-    const mergedPath = path.join(__dirname, "..", "merged.pdf");
+    const mergedPath =
+      path.join(
+        os.tmpdir(),
+        "merged.pdf"
+      );
 
     await merger.save(mergedPath);
 
-    res.download(mergedPath, "merged.pdf");
+    res.download(
+      mergedPath,
+      "merged.pdf"
+    );
 
   } catch (err) {
     console.log("MERGE ERROR:", err);
-    res.status(500).json({ message: "Merge failed" });
+
+    res.status(500).json({
+      message: "Merge failed"
+    });
   }
 };
-
 
 exports.downloadZip = async (req, res) => {
   try {
     const { topicIds } = req.body;
 
-    const topics = await Topic.find({ _id: { $in: topicIds } })
-      .populate("topicMasterId");
+    const topics = await Topic.find({
+      _id: { $in: topicIds }
+    });
 
     res.setHeader("Content-Type", "application/zip");
-    res.setHeader("Content-Disposition", "attachment; filename=topics.zip");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=topics.zip"
+    );
 
     const archive = archiver("zip", {
       zlib: { level: 9 }
@@ -72,30 +85,28 @@ exports.downloadZip = async (req, res) => {
 
     archive.pipe(res);
 
-    topics.forEach((topic) => {
-      const filePath = path.join(__dirname, "..", topic.fileUrl);
+    for (const topic of topics) {
+      const response = await axios.get(topic.fileUrl, {
+        responseType: "stream"
+      });
 
-      if (fs.existsSync(filePath)) {
-        const fileName =
-          (topic.topicMasterId?.title || "file") +
-          path.extname(filePath);
-
-        archive.file(filePath, { name: fileName });
-      }
-    });
+      archive.append(
+        response.data,
+        {
+          name:
+            topic.topicName +
+            "." +
+            topic.fileUrl.split(".").pop()
+        }
+      );
+    }
 
     await archive.finalize();
 
   } catch (err) {
-    console.log("=== ZIP ERROR DETAILS ===");
-    console.log("Error name:", err.name);
-    console.log("Error message:", err.message);
-    console.log("Error stack:", err.stack);
-    console.log("Full error:", err);
-    
-    res.status(500).json({ 
-      message: "ZIP failed", 
-      error: err.message
+    console.log(err);
+    res.status(500).json({
+      message: "ZIP failed"
     });
   }
 };
