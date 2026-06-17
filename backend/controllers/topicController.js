@@ -121,7 +121,7 @@ exports.uploadTopic = async (req, res) => {
     const topic = new Topic({
       courseId: req.body.courseId,
       topicName: req.body.topicName,
-      fileUrl: `/uploads/${req.file.filename}`,
+      fileUrl: req.file.path,,
       fileType: req.file.mimetype,
       facultyId: req.facultyId 
     });
@@ -184,10 +184,10 @@ exports.updateTopic = async (req, res) => {
       updateData.topicName = req.body.topicName;
     }
 
-    if (req.file) {
-      updateData.fileUrl = `/uploads/${req.file.filename}`;
-      updateData.fileType = req.file.mimetype;
-    }
+if (req.file) {
+  updateData.fileUrl = req.file.path;
+  updateData.fileType = req.file.mimetype;
+}
 
     // Ensure faculty can only update their own topics
     const updated = await Topic.findOneAndUpdate(
