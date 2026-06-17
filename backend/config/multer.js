@@ -6,7 +6,9 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => ({
     folder: "notes-app",
-    resource_type: "raw",
+    resource_type: "auto",
+    type: "upload",
+    access_mode: "public",
     public_id: Date.now() + "-" + file.originalname,
   }),
 });
