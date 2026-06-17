@@ -4,6 +4,7 @@ const path = require("path");
 const archiver = require("archiver");
 const PDFMerger = require("pdf-merger-js").default;
 const axios = require("axios");
+const os = require("os");
 
 
 exports.mergeAndDownload = async (req, res) => {
